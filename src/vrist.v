@@ -28,12 +28,6 @@ pub struct Filter[F] {
 	values map[string][]F
 }
 
-pub struct Vehicle {
-	manufacturer string @[json: 'mfgr_name']
-	model string @[json: 'Model']
-	owner []int @[json: 'Owner']
-}
-
 pub fn new_client(url string, token string) Client {
 	return Client{
 		url: url,

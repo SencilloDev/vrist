@@ -1,5 +1,4 @@
-import testing
+import vrist
 
-fn test_square() {
-	assert testing.square(2) == 4
+fn test_() {
 }

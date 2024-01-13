@@ -24,25 +24,32 @@ mut:
 	fields T @[json: 'fields']
 }
 
-pub struct Filter[F] {
-	values map[string][]F
-}
-
 pub fn new_client(url string, token string) Client {
 	return Client{
 		url: url,
 		token: token,
 	}
 }
-
-pub struct Request[T, F] {
+pub struct Request {
 	doc string
 	table string
-	filter Filter[F]
 }
 
-pub fn (c Client) get_records[T, F](req Request[F]) ![]Record[T] {
-	query := json.encode(req.filter.values)
+pub fn (c Client) get_records[T](req Request) ![]Record[T] {
+	url := urllib.URL{
+		scheme: "https",
+		host: c.url,
+		path: "/api/docs/${req.doc}/tables/${req.table}/records",
+	}
+
+	resp := c.http_request(http.Method.get, url)!
+	body := json.decode(Records[T], resp)!
+
+	return body.records	
+}
+
+pub fn (c Client) get_filtered_records[T, F](req Request, filter map[string][]F) ![]Record[T] {
+	query := json.encode(filter)
 	mut q := urllib.Values{}
 	q.add("filter", query)
 
@@ -50,20 +57,25 @@ pub fn (c Client) get_records[T, F](req Request[F]) ![]Record[T] {
 		scheme: "https",
 		host: c.url,
 		path: "/api/docs/${req.doc}/tables/${req.table}/records",
-		raw_query: q.encode(),
+		raw_query: q.encode()
 	}
 
+	resp := c.http_request(http.Method.get, url)!
+	body := json.decode(Records[T], resp)!
+
+	return body.records	
+}
+
+fn (c Client) http_request(method http.Method, url urllib.URL) !string {
 	h := http.new_header_from_map({http.CommonHeader.authorization: "Bearer ${c.token}"})
 
-	mut conf := http.FetchConfig{
+	mut http_req := http.Request{
 		method: http.Method.get,
 		header: h,
 		url: url.str(),
 	}
 
-	res := http.fetch(conf)!
+	resp := http_req.do()!
 
-	a := json.decode(Records[T], res.body)!
-
-	return a.records
+	return resp.body
 }

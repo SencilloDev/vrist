@@ -1,6 +1,5 @@
 module vrist
 
-import net.http
 import net.urllib
 import json
 
@@ -9,44 +8,45 @@ mut:
 	records []Record[T]
 }
 
+type RecordRequest = Request
+
 struct Record[T] {
 mut:
 	id int
 	fields T @[json: 'fields']
 }
 
-pub struct Request {
-	doc string
-	table string
-}
-
-pub fn (c Client) get_records[T](req Request) ![]Record[T] {
+pub fn (r Request) records(document string, table string) RecordRequest {
 	url := urllib.URL{
-		scheme: "https",
-		host: c.url,
-		path: "/api/docs/${req.doc}/tables/${req.table}/records",
+		scheme: r.scheme
+		host: r.host,
+		path: "/api/docs/${document}/tables/${table}/records",
 	}
 
-	resp := c.http_request(http.Method.get, url)!
-	body := json.decode(Records[T], resp)!
+	mut req := RecordRequest{}
+	req = r
+	req.doc = document
+	req.table = table
+	req.url = url
 
-	return body.records	
+	return req
 }
 
-pub fn (c Client) get_filtered_records[T, F](req Request, filter map[string][]F) ![]Record[T] {
+pub fn (r RecordRequest) filter[F](filter map[string][]F) RecordRequest {
 	query := json.encode(filter)
 	mut q := urllib.Values{}
 	q.add("filter", query)
 
-	url := urllib.URL{
-		scheme: "https",
-		host: c.url,
-		path: "/api/docs/${req.doc}/tables/${req.table}/records",
-		raw_query: q.encode()
-	}
+	mut req := RecordRequest{}
+	req = r
+	req.url.raw_query = q.encode()
 
-	resp := c.http_request(http.Method.get, url)!
+	return req
+}
+
+pub fn (r RecordRequest) list[T]() ![]Record[T] {
+	resp := r.send()!
 	body := json.decode(Records[T], resp)!
 
-	return body.records	
+	return body.records
 }

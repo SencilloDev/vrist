@@ -1,8 +1,10 @@
 module vrist 
 
-import net.http
 import net.urllib
+import net.http
 import json
+
+type OrgRequest = Request
 
 pub struct Org {
 	id int
@@ -20,15 +22,36 @@ pub struct Owner {
 	picture string
 }
 
-pub fn (c Client) get_orgs() ![]Org {
+pub fn (r Request) orgs() OrgRequest {
 	url := urllib.URL{
-		scheme: "https",
-		host: c.url,
+		scheme: r.scheme,
+		host: r.host
 		path: "/api/orgs"
 	}
 
-	resp := c.http_request(http.Method.get, url)!
-	orgs := json.decode([]Org, resp)!
+	mut req := OrgRequest{}
+	req = r
+	req.method = http.Method.get
+	req.url = url
 
-	return orgs
+	return req
+}
+
+pub fn (o OrgRequest) list() !GristList {
+	resp := o.send()!
+	body := json.decode([]Org, resp)!
+
+	return body
+}
+
+
+pub fn (o OrgRequest) get(id string) !Org {
+	mut req := Request{}
+	req = o
+	req.url.path += "/${id}"
+
+	resp := req.send()!
+	org := json.decode(Org, resp)!
+
+	return org
 }

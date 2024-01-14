@@ -3,7 +3,7 @@ module vrist
 import net.http
 import net.urllib
 
-type GristList = []Org
+type GristList = []Org | OrgUsers | []Workspace
 
 pub struct Client {
 	scheme string
@@ -40,7 +40,10 @@ pub fn (c Client) new_request() Request {
 }
 
 fn (r Request) send() !string {
-	h := http.new_header_from_map({http.CommonHeader.authorization: "Bearer ${r.token}"})
+	h := http.new_header_from_map({
+		http.CommonHeader.authorization: "Bearer ${r.token}",
+		http.CommonHeader.content_type: "application/json",
+		})
 
 	mut http_req := http.Request{
 		method: r.method,
@@ -50,6 +53,9 @@ fn (r Request) send() !string {
 	}
 
 	resp := http_req.do()!
+	if resp.status_code < 200 || resp.status_code > 299 {
+		return error("${resp.status_code} ${resp.status}")
+	}
 
 	return resp.body
 }

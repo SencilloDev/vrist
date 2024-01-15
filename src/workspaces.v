@@ -13,6 +13,7 @@ pub:
 	access     string
 	docs       []Document
 	org_domain string     @[json: 'org_domain']
+	org        Org
 }
 
 pub fn (r Request) workspaces() WorkspaceRequest {

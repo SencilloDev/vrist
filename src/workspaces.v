@@ -7,6 +7,7 @@ import json
 type WorkspaceRequest = Request 
 
 pub struct Workspace {
+pub:
 	id int 
 	name string 
 	access string 

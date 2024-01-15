@@ -7,6 +7,7 @@ import json
 type OrgRequest = Request
 
 pub struct Org {
+pub:
 	id int
 	name string
 	domain string
@@ -20,6 +21,7 @@ struct OrgUsers {
 	users []OrgUser
 }
 struct OrgUser {
+pub:
 	id int 
 	name string
 	email string 
@@ -27,6 +29,7 @@ struct OrgUser {
 }
 
 pub struct Owner {
+pub:
 	id int
 	name string
 	picture string
@@ -80,6 +83,16 @@ pub fn (o OrgRequest) user_access(id string) !OrgUsers {
 
 	resp := req.send()!
 	return json.decode(OrgUsers, resp)!
+}
+
+pub fn (o OrgRequest) new_workspace(id string, name string) !string {
+	mut req := Request{}
+	req = o
+	req.method = http.Method.post 
+	req.url.path += "/${id}/workspaces"
+	req.data = json.encode({"name": name})
+
+	return req.send()!
 }
 
 pub fn (o OrgRequest) workspaces(org_id string) ![]Workspace {

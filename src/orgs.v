@@ -108,4 +108,3 @@ pub fn (o OrgRequest) workspaces(org_id string) ![]Workspace {
 	resp := req.send()!
 	return json.decode([]Workspace, resp)!
 }
-

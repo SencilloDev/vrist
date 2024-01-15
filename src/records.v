@@ -11,16 +11,16 @@ mut:
 type RecordRequest = Request
 
 struct Record[T] {
-mut:
-	id int
-	fields T @[json: 'fields']
+pub mut:
+	id     int
+	fields T   @[json: 'fields']
 }
 
 pub fn (r Request) records(document string, table string) RecordRequest {
 	url := urllib.URL{
 		scheme: r.scheme
-		host: r.host,
-		path: "/api/docs/${document}/tables/${table}/records",
+		host: r.host
+		path: '/api/docs/${document}/tables/${table}/records'
 	}
 
 	mut req := RecordRequest{}
@@ -35,7 +35,7 @@ pub fn (r Request) records(document string, table string) RecordRequest {
 pub fn (r RecordRequest) filter[F](filter map[string][]F) RecordRequest {
 	query := json.encode(filter)
 	mut q := urllib.Values{}
-	q.add("filter", query)
+	q.add('filter', query)
 
 	mut req := RecordRequest{}
 	req = r

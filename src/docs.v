@@ -38,3 +38,42 @@ pub fn (d DocumentRequest) get(id string) !Document {
 	resp := req.send()!
 	return json.decode(Document, resp)!
 }
+
+pub fn (d DocumentRequest) update_name(id string, name string) ! {
+	mut req := Request{}
+	req = d
+	req.url.path += '/${id}'
+	req.method = http.Method.patch
+	req.data = json.encode({
+		'name': name
+	})
+
+	req.send()!
+
+	return
+}
+
+pub fn (d DocumentRequest) delete(id string) ! {
+	mut req := Request{}
+	req = d
+	req.url.path += '/${id}'
+	req.method = http.Method.delete
+
+	req.send()!
+
+	return
+}
+
+pub fn (d DocumentRequest) move(doc_id string, workspace_id string) ! {
+	mut req := Request{}
+	req = d
+	req.url.path += '/${doc_id}/move'
+	req.method = http.Method.patch
+	req.data = json.encode({
+		'workspace': workspace_id
+	})
+
+	req.send()!
+
+	return
+}
